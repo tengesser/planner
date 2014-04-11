@@ -1,0 +1,62 @@
+(define (domain thieves)
+  (:requirements :strips :typing)
+  (:types agent room)
+  (:predicates
+     ; these are for describing the scenery and remain constant
+     (rooms-adj ?r1 ?r2 - room)
+     (server-at ?r - room)
+     (monitor-at ?r - room)
+     (guard-at ?r - room)
+     (gold-at ?r - room)
+     ; these can change during plan execution
+     (agent-at ?a - agent ?r - room)
+     (guards-visible-at ?r - room)
+     (carries-gold ?a - agent)
+     (captured ?a - agent))
+  (:action move
+     :parameters (?agent - agent ?from ?to - room)
+     :precondition (and (rooms-adj ?from ?to)
+                        (agent-at ?agent ?from)
+                        (not (captured ?agent)))
+     :effect (and (not (agent-at ?agent ?from))
+                  (agent-at ?agent ?to)))
+  (:action reroutefeed
+     :parameters (?agent - agent ?from ?to - room)
+     :byagent agent
+     :precondition (and (server-at ?from) 
+                        (monitor-at ?to)
+                        (agent-at ?agent ?from))
+     :effect (guards-visible-at ?to))
+  (:action communicate
+     :parameters (?with - agent ?from ?about - room ?to - agent)
+     (:event-designated guardinroom
+        :precondition (and (not (= ?with ?to))
+                           (monitor-at ?from)
+                           (agent-at ?with ?from)
+                           (guards-visible-at ?from)
+                           (guard-at ?about))
+        :effect (and))
+     (:event-designated guardnotinroom
+        :precondition (and (not (= ?with ?to))
+                           (monitor-at ?from)
+                           (agent-at ?with ?from)
+                           (guards-visible-at ?from)
+                           (not (guard-at ?about)))
+        :effect (and))
+     :observability none
+     :observability full ?from ?to)
+  (:action steal
+     :parameters (?agent - agent ?room - room)
+     (:event-designated steal-succ
+        :precondition (and (exists (?r - room) (gold-at ?r))
+                           (gold-at ?room)
+                           (agent-at ?agent ?room) 
+                           (not (guard-at ?room)))
+        :effect (carries-gold ?agent))
+     (:event-designated steal-unsucc
+        :precondition (and (gold-at ?room)
+                           (agent-at ?agent ?room)
+                           (guard-at ?room))
+        :effect (forall (?agent - agent) (captured ?agent)))
+     :observability none
+     :observability full ?agent))

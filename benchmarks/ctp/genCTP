@@ -1,0 +1,30 @@
+# nAgents, nWaypoints, nUnknownRoads, nWorlds
+echo  2_05
+mkdir 2_05; for i in $(seq -w 1 25); do python3 generator.py 2  5 0.4 0 2 3 2 1 > 2_05/$i.maepl; done
+echo  2_07
+mkdir 2_07; for i in $(seq -w 1 25); do python3 generator.py 2  7 0.4 0 2 3 3 1 > 2_07/$i.maepl; done
+echo  2_09
+mkdir 2_09; for i in $(seq -w 1 25); do python3 generator.py 2  9 0.4 0 2 3 4 1 > 2_09/$i.maepl; done
+echo  2_11
+mkdir 2_11; for i in $(seq -w 1 25); do python3 generator.py 2 11 0.4 0 2 3 5 1 > 2_11/$i.maepl; done
+echo  2_13
+mkdir 2_13; for i in $(seq -w 1 25); do python3 generator.py 2 13 0.4 0 2 3 6 1 > 2_13/$i.maepl; done
+echo  2_15
+mkdir 2_15; for i in $(seq -w 1 25); do python3 generator.py 2 15 0.4 0 2 3 7 1 > 2_15/$i.maepl; done
+echo  3_05
+mkdir 3_05; for i in $(seq -w 1 25); do python3 generator.py 3  5 0.4 0 3 5 2 1 > 3_05/$i.maepl; done
+echo  3_07
+mkdir 3_07; for i in $(seq -w 1 25); do python3 generator.py 3  7 0.4 0 3 5 3 1 > 3_07/$i.maepl; done
+echo  3_09
+mkdir 3_09; for i in $(seq -w 1 25); do python3 generator.py 3  9 0.4 0 3 5 4 1 > 3_09/$i.maepl; done
+echo  3_11
+mkdir 3_11; for i in $(seq -w 1 25); do python3 generator.py 3 11 0.4 0 3 5 5 1 > 3_11/$i.maepl; done
+echo  3_13
+mkdir 3_13; for i in $(seq -w 1 25); do python3 generator.py 3 13 0.4 0 3 5 6 1 > 3_13/$i.maepl; done
+echo  3_15
+mkdir 3_15; for i in $(seq -w 1 25); do python3 generator.py 3 15 0.4 0 3 5 7 1 > 3_15/$i.maepl; done
+
+# 2,5,2,3 show example
+# with 2 agents: 2 unknown, 3 possibilities
+# with 3 agents: 3 unknown, 5 possibilities
+# 5(2) vs 7(3) vs 9(4) vs 11(5) vs 13(6) vs 15(7)

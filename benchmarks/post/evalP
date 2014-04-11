@@ -1,0 +1,11 @@
+#for f in 5_*; do for t in $f/*.maepl; do echo $t; time ../../planner conditional individual none post-simple-domain-pnf.maepl $t | egrep "(Search:|Heur:|maepl|user)"; done &> $f/none.txt; done
+
+#for f in 5_*; do for t in $f/*.maepl; do echo $t; time ../../planner conditional individual relaxation post-simple-domain-pnf.maepl $t | egrep "(Search:|Heur:|maepl|user)"; done &> $f/relax.txt; done
+
+for f in 6_*; do for t in $f/*.maepl; do echo $t; time ../../planner conditional individual none post-simple-domain-pnf.maepl $t | egrep "(Search:|Heur:|maepl|user)"; done &> $f/none.txt; done
+
+for f in 6_*; do for t in $f/*.maepl; do echo $t; time ../../planner conditional individual relaxation post-simple-domain-pnf.maepl $t | egrep "(Search:|Heur:|maepl|user)"; done &> $f/relax.txt; done
+
+for f in 7_*; do for t in $f/*.maepl; do echo $t; time ../../planner conditional individual none post-simple-domain-pnf.maepl $t | egrep "(Search:|Heur:|maepl|user)"; done &> $f/none.txt; done
+
+for f in 7_*; do for t in $f/*.maepl; do echo $t; time ../../planner conditional individual relaxation post-simple-domain-pnf.maepl $t | egrep "(Search:|Heur:|maepl|user)"; done &> $f/relax.txt; done

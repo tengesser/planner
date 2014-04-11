@@ -1,0 +1,5 @@
+for j in 0.2 0.4 0.6 0.8; do mkdir 2_$j; for i in $(seq -w 1 25); do python3 generator.py 2 $j > 2_$j/$i.maepl; done; done
+for j in 1.0; do mkdir 2_$j; for i in $(seq -w 1 1); do python3 generator.py 2 $j > 2_$j/$i.maepl; done; done
+
+for j in 0.2 0.4 0.6 0.8; do mkdir 3_$j; for i in $(seq -w 1 25); do python3 generator.py 3 $j > 3_$j/$i.maepl; done; done
+for j in 1.0; do mkdir 3_$j; for i in $(seq -w 1 1); do python3 generator.py 3 $j > 3_$j/$i.maepl; done; done

@@ -1,0 +1,30 @@
+(define (problem thieves-task-1)
+  (:domain thieves)
+  (:objects agent1 agent2 - agent
+            van svr vr1 vr2 - room)
+  (:init ; scenery description
+         (rooms-adj van svr)
+         (rooms-adj svr van)
+         (rooms-adj svr vr1)
+         (rooms-adj svr vr2)
+         (rooms-adj vr1 svr)
+         (rooms-adj vr2 svr)
+         (gold-at vr1)
+         (gold-at vr2)
+         (server-at svr)
+         (monitor-at van)
+         (not (monitor-at svr))
+         ; initial state description
+         (agent-at agent1 van)
+         (agent-at agent2 van))
+  (:world-designated wv1
+     (guard-at vr1))
+  (:world-designated wv2
+     (guard-at vr2))
+  (:observability (partition (wv1 wv2)) agent1)
+  (:observability none agent2)
+  (:goal (and (rooms-adj van svr)
+              (agent-at agent1 van)
+              (agent-at agent2 van)
+              (or (carries-gold agent1)
+                  (carries-gold agent2)))))

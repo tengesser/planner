@@ -1,0 +1,531 @@
+(define (domain mastermind) ; a 4 field mastermind game
+
+  (:types color agent)
+  (:constants a - agent)
+  (:predicates (c1 ?c - color)
+               (c2 ?c - color)
+               (c3 ?c - color)
+               (c4 ?c - color)
+               (last-c1 ?c - color)
+               (last-c2 ?c - color)
+               (last-c3 ?c - color)
+               (last-c4 ?c - color)
+               (win)
+               (check-correct))
+ 
+  ; retrieve number of black feedback pieces
+  (:action check-correct
+    :parameters  (?c1 ?c2 ?c3 ?c4 - color)
+    :byagent a
+    (:event-designated correct0 ; 0 pieces - no correct guesses
+       :precondition (and (check-correct) (last-c1 ?c1) (last-c2 ?c2)
+                                          (last-c3 ?c3) (last-c4 ?c4)
+                          (not (c1 ?c1))
+                          (not (c2 ?c2))
+                          (not (c3 ?c3))
+                          (not (c4 ?c4)))
+       :effect (and (not (check-correct)) (not (last-c1 ?c1)) (not (last-c2 ?c2)) 
+                                          (not (last-c3 ?c3)) (not (last-c4 ?c4))))
+    (:event-designated correct1 ; 1 piece - exactly 1 correct guess
+       :precondition (and (check-correct) (last-c1 ?c1) (last-c2 ?c2)
+                                          (last-c3 ?c3) (last-c4 ?c4)
+                          (or (and (c1 ?c1)
+                                   (not (c2 ?c2))
+                                   (not (c3 ?c3))
+                                   (not (c4 ?c4)))
+                              (and (not (c1 ?c1))
+                                   (c2 ?c2)
+                                   (not (c3 ?c3))
+                                   (not (c4 ?c4)))
+                              (and (not (c1 ?c1))
+                                   (not (c2 ?c2))
+                                   (c3 ?c3)
+                                   (not (c4 ?c4)))
+                              (and (not (c1 ?c1))
+                                   (not (c2 ?c2))
+                                   (not (c3 ?c3))
+                                   (c4 ?c4))))
+       :effect (and (not (check-correct)) (not (last-c1 ?c1)) (not (last-c2 ?c2))
+                                     (not (last-c3 ?c3)) (not (last-c4 ?c4))))
+    (:event-designated correct2; 2 pieces - exactly 2 correct guesses
+       :precondition (and (check-correct) (last-c1 ?c1) (last-c2 ?c2)
+                                          (last-c3 ?c3) (last-c4 ?c4)
+                          (or (and (c1 ?c1)
+                                   (c2 ?c2)
+                                   (not (c3 ?c3))
+                                   (not (c4 ?c4)))
+                              (and (c1 ?c1)
+                                   (not (c2 ?c2))
+                                   (c3 ?c3)
+                                   (not (c4 ?c4)))
+                              (and (c1 ?c1)
+                                   (not (c2 ?c2))
+                                   (not (c3 ?c3))
+                                   (c4 ?c4))
+                              (and (not (c1 ?c1))
+                                   (c2 ?c2)
+                                   (c3 ?c3)
+                                   (not (c4 ?c4)))
+                              (and (not (c1 ?c1))
+                                   (c2 ?c2)
+                                   (not (c3 ?c3))
+                                   (c4 ?c4))
+                              (and (not (c1 ?c1))
+                                   (not (c2 ?c2))
+                                   (c3 ?c3)
+                                   (c4 ?c4))))
+       :effect (and (not (check-correct)) (not (last-c1 ?c1)) (not (last-c2 ?c2))
+                                          (not (last-c3 ?c3)) (not (last-c4 ?c4))))
+    (:event-designated correct3 ; 3 pieces - exactly 3 correct guesses
+       :precondition (and (check-correct) (last-c1 ?c1) (last-c2 ?c2)
+                                          (last-c3 ?c3) (last-c4 ?c4)
+                          (or (and (not (c1 ?c1))
+                                   (c2 ?c2)
+                                   (c3 ?c3)
+                                   (c4 ?c4))
+                              (and (c1 ?c1)
+                                   (not (c2 ?c2))
+                                  (c3 ?c3)
+                                   (c4 ?c4))
+                              (and (c1 ?c1)
+                                   (c2 ?c2)
+                                   (not (c3 ?c3))
+                                   (c4 ?c4))
+                              (and (c1 ?c1)
+                                   (c2 ?c2)
+                                   (c3 ?c3)
+                                   (not (c4 ?c4)))))
+       :effect (and (not (check-correct)) (not (last-c1 ?c1)) (not (last-c2 ?c2))
+                                          (not (last-c3 ?c3)) (not (last-c4 ?c4))))
+     (:event-designated correct4 ; 4 pieces - everything correct
+       :precondition (and (check-correct) (last-c1 ?c1) (last-c2 ?c2)
+                                          (last-c3 ?c3) (last-c4 ?c4)
+                          (c1 ?c1)
+                          (c2 ?c2)
+                          (c3 ?c3)
+                          (c4 ?c4))
+       :effect (and (win) (not (check-correct)) (not (last-c1 ?c1)) (not (last-c2 ?c2))
+                                                (not (last-c3 ?c3)) (not (last-c4 ?c4))))
+    :observability full)
+
+  ; retrieve overall number of black and white feedback pieces
+  (:action check-permutated 
+    :parameters (?c1 ?c2 ?c3 ?c4 - color)
+    :byagent a
+    (:event-designated permutated0 ; 0 pieces - none of the colors exists in the solution
+       :precondition (and (not (check-correct))
+                          (not (c1 ?c1)) (not (c1 ?c2)) (not (c1 ?c3)) (not (c1 ?c4))
+                          (not (c2 ?c1)) (not (c2 ?c2)) (not (c2 ?c3)) (not (c2 ?c4))
+                          (not (c3 ?c1)) (not (c3 ?c2)) (not (c3 ?c3)) (not (c3 ?c4))
+                          (not (c4 ?c1)) (not (c4 ?c2)) (not (c4 ?c3)) (not (c4 ?c4)))
+       :effect (and (check-correct) (last-c1 ?c1) (last-c2 ?c2)
+                                    (last-c3 ?c3) (last-c4 ?c4)))
+    (:event-designated permutated1 ; 1 piece
+       :precondition (and (not (check-correct))
+                          (or (and (c1 ?c1) (not (c2 ?c2)) (not (c2 ?c3)) (not (c2 ?c4)) ; 1---
+                                            (not (c3 ?c2)) (not (c3 ?c3)) (not (c3 ?c4))
+                                            (not (c4 ?c2)) (not (c4 ?c3)) (not (c4 ?c4)))
+                              (and (c2 ?c1) (not (c1 ?c2)) (not (c1 ?c3)) (not (c1 ?c4)) ; -1--
+                                            (not (c3 ?c2)) (not (c3 ?c3)) (not (c3 ?c4))
+                                            (not (c4 ?c2)) (not (c4 ?c3)) (not (c4 ?c4)))
+                              (and (c3 ?c1) (not (c1 ?c2)) (not (c1 ?c3)) (not (c1 ?c4)) ; --1-
+                                            (not (c2 ?c2)) (not (c2 ?c3)) (not (c2 ?c4))
+                                            (not (c4 ?c2)) (not (c4 ?c3)) (not (c4 ?c4)))
+                              (and (c4 ?c1) (not (c1 ?c2)) (not (c1 ?c3)) (not (c1 ?c4)) ; ---1
+                                            (not (c2 ?c2)) (not (c2 ?c3)) (not (c2 ?c4))
+                                            (not (c3 ?c2)) (not (c3 ?c3)) (not (c3 ?c4)))
+                              (and (c1 ?c2) (not (c2 ?c1)) (not (c2 ?c3)) (not (c2 ?c4)) ; 2---
+                                            (not (c3 ?c1)) (not (c3 ?c3)) (not (c3 ?c4))
+                                            (not (c4 ?c1)) (not (c4 ?c3)) (not (c4 ?c4)))
+                              (and (c2 ?c2) (not (c1 ?c1)) (not (c1 ?c3)) (not (c1 ?c4)) ; -2--
+                                            (not (c3 ?c1)) (not (c3 ?c3)) (not (c3 ?c4))
+                                            (not (c4 ?c1)) (not (c4 ?c3)) (not (c4 ?c4)))
+                              (and (c3 ?c2) (not (c1 ?c1)) (not (c1 ?c3)) (not (c1 ?c4)) ; --2-
+                                            (not (c2 ?c1)) (not (c2 ?c3)) (not (c2 ?c4))
+                                            (not (c4 ?c1)) (not (c4 ?c3)) (not (c4 ?c4)))
+                              (and (c4 ?c2) (not (c1 ?c1)) (not (c1 ?c3)) (not (c1 ?c4)) ; ---2
+                                            (not (c2 ?c1)) (not (c2 ?c3)) (not (c2 ?c4))
+                                            (not (c3 ?c1)) (not (c3 ?c3)) (not (c3 ?c4)))
+                              (and (c1 ?c3) (not (c2 ?c1)) (not (c2 ?c2)) (not (c2 ?c4)) ; 3---
+                                            (not (c3 ?c1)) (not (c3 ?c2)) (not (c3 ?c4))
+                                            (not (c4 ?c1)) (not (c4 ?c2)) (not (c4 ?c4)))
+                              (and (c2 ?c3) (not (c1 ?c1)) (not (c1 ?c2)) (not (c1 ?c4)) ; -3--
+                                            (not (c3 ?c1)) (not (c3 ?c2)) (not (c3 ?c4))
+                                            (not (c4 ?c1)) (not (c4 ?c2)) (not (c4 ?c4)))
+                              (and (c3 ?c3) (not (c1 ?c1)) (not (c1 ?c2)) (not (c1 ?c4)) ; --3-
+                                            (not (c2 ?c1)) (not (c2 ?c2)) (not (c2 ?c4))
+                                            (not (c4 ?c1)) (not (c4 ?c2)) (not (c4 ?c4)))
+                              (and (c4 ?c3) (not (c1 ?c1)) (not (c1 ?c2)) (not (c1 ?c4)) ; ---3
+                                            (not (c2 ?c1)) (not (c2 ?c2)) (not (c2 ?c4))
+                                            (not (c3 ?c1)) (not (c3 ?c2)) (not (c3 ?c4)))
+                              (and (c1 ?c4) (not (c2 ?c1)) (not (c2 ?c2)) (not (c2 ?c3)) ; 4---
+                                            (not (c3 ?c1)) (not (c3 ?c2)) (not (c3 ?c3))
+                                            (not (c4 ?c1)) (not (c4 ?c2)) (not (c4 ?c3)))
+                              (and (c2 ?c4) (not (c1 ?c1)) (not (c1 ?c2)) (not (c1 ?c3)) ; -4--
+                                            (not (c3 ?c1)) (not (c3 ?c2)) (not (c3 ?c3))
+                                            (not (c4 ?c1)) (not (c4 ?c2)) (not (c4 ?c3)))
+                              (and (c3 ?c4) (not (c1 ?c1)) (not (c1 ?c2)) (not (c1 ?c3)) ; --4-
+                                            (not (c2 ?c1)) (not (c2 ?c2)) (not (c2 ?c3))
+                                            (not (c4 ?c1)) (not (c4 ?c2)) (not (c4 ?c3)))
+                              (and (c4 ?c4) (not (c1 ?c1)) (not (c1 ?c2)) (not (c1 ?c3)) ; ---4
+                                            (not (c2 ?c1)) (not (c2 ?c2)) (not (c2 ?c3))
+                                            (not (c3 ?c1)) (not (c3 ?c2)) (not (c3 ?c3)))))
+       :effect (and (check-correct) (last-c1 ?c1) (last-c2 ?c2)
+                                    (last-c3 ?c3) (last-c4 ?c4)))
+    (:event-designated permutated2 ; 2 pieces
+       :precondition (and (not (check-correct))
+                          (not
+          ; ------------ permutated4 ------------
+                             (or (and (c1 ?c1) (c2 ?c2) (c3 ?c3) (c4 ?c4)) ; 1234
+                                 (and (c1 ?c1) (c2 ?c2) (c3 ?c4) (c4 ?c3)) ; 1243
+                                 (and (c1 ?c1) (c2 ?c3) (c3 ?c2) (c4 ?c4)) ; 1324
+                                 (and (c1 ?c1) (c2 ?c3) (c3 ?c4) (c4 ?c2)) ; 1342
+                                 (and (c1 ?c1) (c2 ?c4) (c3 ?c2) (c4 ?c3)) ; 1423
+                                 (and (c1 ?c1) (c2 ?c4) (c3 ?c3) (c4 ?c2)) ; 1432
+                                 (and (c1 ?c2) (c2 ?c1) (c3 ?c3) (c4 ?c4)) ; 2134
+                                 (and (c1 ?c2) (c2 ?c1) (c3 ?c4) (c4 ?c3)) ; 2143
+                                 (and (c1 ?c2) (c2 ?c3) (c3 ?c1) (c4 ?c4)) ; 2314
+                                 (and (c1 ?c2) (c2 ?c3) (c3 ?c4) (c4 ?c1)) ; 2341
+                                 (and (c1 ?c2) (c2 ?c4) (c3 ?c1) (c4 ?c3)) ; 2413
+                                 (and (c1 ?c2) (c2 ?c4) (c3 ?c3) (c4 ?c1)) ; 2431
+                                 (and (c1 ?c3) (c2 ?c1) (c3 ?c2) (c4 ?c4)) ; 3124
+                                 (and (c1 ?c3) (c2 ?c1) (c3 ?c4) (c4 ?c2)) ; 3142
+                                 (and (c1 ?c3) (c2 ?c2) (c3 ?c1) (c4 ?c4)) ; 3214
+                                 (and (c1 ?c3) (c2 ?c2) (c3 ?c4) (c4 ?c1)) ; 2341
+                                 (and (c1 ?c3) (c2 ?c4) (c3 ?c1) (c4 ?c2)) ; 3412
+                                 (and (c1 ?c3) (c2 ?c4) (c3 ?c2) (c4 ?c1)) ; 3421
+                                 (and (c1 ?c4) (c2 ?c1) (c3 ?c2) (c4 ?c3)) ; 4123
+                                 (and (c1 ?c4) (c2 ?c1) (c3 ?c3) (c4 ?c2)) ; 4132
+                                 (and (c1 ?c4) (c2 ?c2) (c3 ?c1) (c4 ?c3)) ; 4213
+                                 (and (c1 ?c4) (c2 ?c2) (c3 ?c3) (c4 ?c1)) ; 4231
+                                 (and (c1 ?c4) (c2 ?c3) (c3 ?c1) (c4 ?c2)) ; 4312
+                                 (and (c1 ?c4) (c2 ?c3) (c3 ?c2) (c4 ?c1))) ; 4321
+          ; ------------ permutated4 ------------
+                          )
+                          (not
+          ; ------------ permutated3 ------------
+                            (or ; xxx-
+                                (and (c1 ?c1) (c2 ?c2) (c3 ?c3)) ; 123
+                                (and (c1 ?c1) (c2 ?c3) (c3 ?c2)) ; 132
+                                (and (c1 ?c2) (c2 ?c1) (c3 ?c3)) ; 213
+                                (and (c1 ?c2) (c2 ?c3) (c3 ?c1)) ; 231
+                                (and (c1 ?c3) (c2 ?c1) (c3 ?c2)) ; 312
+                                (and (c1 ?c3) (c2 ?c2) (c3 ?c1)) ; 321
+                                (and (c1 ?c1) (c2 ?c2) (c3 ?c4)) ; 124
+                                (and (c1 ?c1) (c2 ?c4) (c3 ?c2)) ; 142
+                                (and (c1 ?c2) (c2 ?c1) (c3 ?c4)) ; 214
+                                (and (c1 ?c2) (c2 ?c4) (c3 ?c1)) ; 241
+                                (and (c1 ?c4) (c2 ?c1) (c3 ?c2)) ; 412
+                                (and (c1 ?c4) (c2 ?c2) (c3 ?c1)) ; 421
+                                (and (c1 ?c1) (c2 ?c3) (c3 ?c4)) ; 134
+                                (and (c1 ?c1) (c2 ?c4) (c3 ?c3)) ; 143
+                                (and (c1 ?c3) (c2 ?c1) (c3 ?c4)) ; 314
+                                (and (c1 ?c3) (c2 ?c4) (c3 ?c1)) ; 341
+                                (and (c1 ?c4) (c2 ?c1) (c3 ?c3)) ; 413
+                                (and (c1 ?c4) (c2 ?c3) (c3 ?c1)) ; 431
+                                (and (c1 ?c2) (c2 ?c3) (c3 ?c4)) ; 234
+                                (and (c1 ?c2) (c2 ?c4) (c3 ?c3)) ; 243
+                                (and (c1 ?c3) (c2 ?c2) (c3 ?c4)) ; 324
+                                (and (c1 ?c3) (c2 ?c4) (c3 ?c2)) ; 342
+                                (and (c1 ?c4) (c2 ?c2) (c3 ?c3)) ; 423
+                                (and (c1 ?c4) (c2 ?c3) (c3 ?c2)) ; 432
+                                ; xx-x
+                                (and (c1 ?c1) (c2 ?c2) (c4 ?c3)) ; 123
+                                (and (c1 ?c1) (c2 ?c3) (c4 ?c2)) ; 132
+                                (and (c1 ?c2) (c2 ?c1) (c4 ?c3)) ; 213
+                                (and (c1 ?c2) (c2 ?c3) (c4 ?c1)) ; 231
+                                (and (c1 ?c3) (c2 ?c1) (c4 ?c2)) ; 312
+                                (and (c1 ?c3) (c2 ?c2) (c4 ?c1)) ; 321
+                                (and (c1 ?c1) (c2 ?c2) (c4 ?c4)) ; 124
+                                (and (c1 ?c1) (c2 ?c4) (c4 ?c2)) ; 142
+                                (and (c1 ?c2) (c2 ?c1) (c4 ?c4)) ; 214
+                                (and (c1 ?c2) (c2 ?c4) (c4 ?c1)) ; 241
+                                (and (c1 ?c4) (c2 ?c1) (c4 ?c2)) ; 412
+                                (and (c1 ?c4) (c2 ?c2) (c4 ?c1)) ; 421
+                                (and (c1 ?c1) (c2 ?c3) (c4 ?c4)) ; 134
+                                (and (c1 ?c1) (c2 ?c4) (c4 ?c3)) ; 143
+                                (and (c1 ?c3) (c2 ?c1) (c4 ?c4)) ; 314
+                                (and (c1 ?c3) (c2 ?c4) (c4 ?c1)) ; 341
+                                (and (c1 ?c4) (c2 ?c1) (c4 ?c3)) ; 413
+                                (and (c1 ?c4) (c2 ?c3) (c4 ?c1)) ; 431
+                                (and (c1 ?c2) (c2 ?c3) (c4 ?c4)) ; 234
+                                (and (c1 ?c2) (c2 ?c4) (c4 ?c3)) ; 243
+                                (and (c1 ?c3) (c2 ?c2) (c4 ?c4)) ; 324
+                                (and (c1 ?c3) (c2 ?c4) (c4 ?c2)) ; 342
+                                (and (c1 ?c4) (c2 ?c2) (c4 ?c3)) ; 423
+                                (and (c1 ?c4) (c2 ?c3) (c4 ?c2)) ; 432
+                                ; x-xx
+                                (and (c1 ?c1) (c3 ?c2) (c4 ?c3)) ; 123
+                                (and (c1 ?c1) (c3 ?c3) (c4 ?c2)) ; 132
+                                (and (c1 ?c2) (c3 ?c1) (c4 ?c3)) ; 213
+                                (and (c1 ?c2) (c3 ?c3) (c4 ?c1)) ; 231
+                                (and (c1 ?c3) (c3 ?c1) (c4 ?c2)) ; 312
+                                (and (c1 ?c3) (c3 ?c2) (c4 ?c1)) ; 321
+                                (and (c1 ?c1) (c3 ?c2) (c4 ?c4)) ; 124
+                                (and (c1 ?c1) (c3 ?c4) (c4 ?c2)) ; 142
+                                (and (c1 ?c2) (c3 ?c1) (c4 ?c4)) ; 214
+                                (and (c1 ?c2) (c3 ?c4) (c4 ?c1)) ; 241
+                                (and (c1 ?c4) (c3 ?c1) (c4 ?c2)) ; 412
+                                (and (c1 ?c4) (c3 ?c2) (c4 ?c1)) ; 421
+                                (and (c1 ?c1) (c3 ?c3) (c4 ?c4)) ; 134
+                                (and (c1 ?c1) (c3 ?c4) (c4 ?c3)) ; 143
+                                (and (c1 ?c3) (c3 ?c1) (c4 ?c4)) ; 314
+                                (and (c1 ?c3) (c3 ?c4) (c4 ?c1)) ; 341
+                                (and (c1 ?c4) (c3 ?c1) (c4 ?c3)) ; 413
+                                (and (c1 ?c4) (c3 ?c3) (c4 ?c1)) ; 431
+                                (and (c1 ?c2) (c3 ?c3) (c4 ?c4)) ; 234
+                                (and (c1 ?c2) (c3 ?c4) (c4 ?c3)) ; 243
+                                (and (c1 ?c3) (c3 ?c2) (c4 ?c4)) ; 324
+                                (and (c1 ?c3) (c3 ?c4) (c4 ?c2)) ; 342
+                                (and (c1 ?c4) (c3 ?c2) (c4 ?c3)) ; 423
+                                (and (c1 ?c4) (c3 ?c3) (c4 ?c2)) ; 432
+                                ; -xxx
+                                (and (c2 ?c1) (c3 ?c2) (c4 ?c3)) ; 123
+                                (and (c2 ?c1) (c3 ?c3) (c4 ?c2)) ; 132
+                                (and (c2 ?c2) (c3 ?c1) (c4 ?c3)) ; 213
+                                (and (c2 ?c2) (c3 ?c3) (c4 ?c1)) ; 231
+                                (and (c2 ?c3) (c3 ?c1) (c4 ?c2)) ; 312
+                                (and (c2 ?c3) (c3 ?c2) (c4 ?c1)) ; 321
+                                (and (c2 ?c1) (c3 ?c2) (c4 ?c4)) ; 124
+                                (and (c2 ?c1) (c3 ?c4) (c4 ?c2)) ; 142
+                                (and (c2 ?c2) (c3 ?c1) (c4 ?c4)) ; 214
+                                (and (c2 ?c2) (c3 ?c4) (c4 ?c1)) ; 241
+                                (and (c2 ?c4) (c3 ?c1) (c4 ?c2)) ; 412
+                                (and (c2 ?c4) (c3 ?c2) (c4 ?c1)) ; 421
+                                (and (c2 ?c1) (c3 ?c3) (c4 ?c4)) ; 134
+                                (and (c2 ?c1) (c3 ?c4) (c4 ?c3)) ; 143
+                                (and (c2 ?c3) (c3 ?c1) (c4 ?c4)) ; 314
+                                (and (c2 ?c3) (c3 ?c4) (c4 ?c1)) ; 341
+                                (and (c2 ?c4) (c3 ?c1) (c4 ?c3)) ; 413
+                                (and (c2 ?c4) (c3 ?c3) (c4 ?c1)) ; 431
+                                (and (c2 ?c2) (c3 ?c3) (c4 ?c4)) ; 234
+                                (and (c2 ?c2) (c3 ?c4) (c4 ?c3)) ; 243
+                                (and (c2 ?c3) (c3 ?c2) (c4 ?c4)) ; 324
+                                (and (c2 ?c3) (c3 ?c4) (c4 ?c2)) ; 342
+                                (and (c2 ?c4) (c3 ?c2) (c4 ?c3)) ; 423
+                                (and (c2 ?c4) (c3 ?c3) (c4 ?c2))) ; 432
+          ; ------------ permutated3 ------------
+                            )
+                            (or ; xx--
+                                (and (c1 ?c1) (c2 ?c2)) ; 12
+                                (and (c1 ?c1) (c2 ?c3)) ; 13
+                                (and (c1 ?c1) (c2 ?c4)) ; 14
+                                (and (c1 ?c2) (c2 ?c1)) ; 21
+                                (and (c1 ?c2) (c2 ?c3)) ; 23
+                                (and (c1 ?c2) (c2 ?c4)) ; 24
+                                (and (c1 ?c3) (c2 ?c1)) ; 31
+                                (and (c1 ?c3) (c2 ?c2)) ; 32
+                                (and (c1 ?c3) (c2 ?c4)) ; 34
+                                ; x-x-
+                                (and (c1 ?c1) (c3 ?c2)) ; 12
+                                (and (c1 ?c1) (c3 ?c3)) ; 13
+                                (and (c1 ?c1) (c3 ?c4)) ; 14
+                                (and (c1 ?c2) (c3 ?c1)) ; 21
+                                (and (c1 ?c2) (c3 ?c3)) ; 23
+                                (and (c1 ?c2) (c3 ?c4)) ; 24
+                                (and (c1 ?c3) (c3 ?c1)) ; 31
+                                (and (c1 ?c3) (c3 ?c2)) ; 32
+                                (and (c1 ?c3) (c3 ?c4)) ; 34
+                                ; x--x
+                                (and (c1 ?c1) (c4 ?c2)) ; 12
+                                (and (c1 ?c1) (c4 ?c3)) ; 13
+                                (and (c1 ?c1) (c4 ?c4)) ; 14
+                                (and (c1 ?c2) (c4 ?c1)) ; 21
+                                (and (c1 ?c2) (c4 ?c3)) ; 23
+                                (and (c1 ?c2) (c4 ?c4)) ; 24
+                                (and (c1 ?c3) (c4 ?c1)) ; 31
+                                (and (c1 ?c3) (c4 ?c2)) ; 32
+                                (and (c1 ?c3) (c4 ?c4)) ; 34
+                                ; -xx-
+                                (and (c2 ?c1) (c3 ?c2)) ; 12
+                                (and (c2 ?c1) (c3 ?c3)) ; 13
+                                (and (c2 ?c1) (c3 ?c4)) ; 14
+                                (and (c2 ?c2) (c3 ?c1)) ; 21
+                                (and (c2 ?c2) (c3 ?c3)) ; 23
+                                (and (c2 ?c2) (c3 ?c4)) ; 24
+                                (and (c2 ?c3) (c3 ?c1)) ; 31
+                                (and (c2 ?c3) (c3 ?c2)) ; 32
+                                (and (c2 ?c3) (c3 ?c4)) ; 34
+                                ; -x-x
+                                (and (c2 ?c1) (c4 ?c2)) ; 12
+                                (and (c2 ?c1) (c4 ?c3)) ; 13
+                                (and (c2 ?c1) (c4 ?c4)) ; 14
+                                (and (c2 ?c2) (c4 ?c1)) ; 21
+                                (and (c2 ?c2) (c4 ?c3)) ; 23
+                                (and (c2 ?c2) (c4 ?c4)) ; 24
+                                (and (c2 ?c3) (c4 ?c1)) ; 31
+                                (and (c2 ?c3) (c4 ?c2)) ; 32
+                                (and (c2 ?c3) (c4 ?c4)) ; 34
+                                ; --xx
+                                (and (c3 ?c1) (c4 ?c2)) ; 12
+                                (and (c3 ?c1) (c4 ?c3)) ; 13
+                                (and (c3 ?c1) (c4 ?c4)) ; 14
+                                (and (c3 ?c2) (c4 ?c1)) ; 21
+                                (and (c3 ?c2) (c4 ?c3)) ; 23
+                                (and (c3 ?c2) (c4 ?c4)) ; 24
+                                (and (c3 ?c3) (c4 ?c1)) ; 31
+                                (and (c3 ?c3) (c4 ?c2)) ; 32
+                                (and (c3 ?c3) (c4 ?c4)))) ; 34
+       :effect (and (check-correct) (last-c1 ?c1) (last-c2 ?c2)
+                                    (last-c3 ?c3) (last-c4 ?c4)))
+    (:event-designated permutated3
+       :precondition (and (not (check-correct))
+                          (not 
+          ; ------------ permutated4 ------------
+                             (or (and (c1 ?c1) (c2 ?c2) (c3 ?c3) (c4 ?c4)) ; 1234
+                                 (and (c1 ?c1) (c2 ?c2) (c3 ?c4) (c4 ?c3)) ; 1243
+                                 (and (c1 ?c1) (c2 ?c3) (c3 ?c2) (c4 ?c4)) ; 1324
+                                 (and (c1 ?c1) (c2 ?c3) (c3 ?c4) (c4 ?c2)) ; 1342
+                                 (and (c1 ?c1) (c2 ?c4) (c3 ?c2) (c4 ?c3)) ; 1423
+                                 (and (c1 ?c1) (c2 ?c4) (c3 ?c3) (c4 ?c2)) ; 1432
+                                 (and (c1 ?c2) (c2 ?c1) (c3 ?c3) (c4 ?c4)) ; 2134
+                                 (and (c1 ?c2) (c2 ?c1) (c3 ?c4) (c4 ?c3)) ; 2143
+                                 (and (c1 ?c2) (c2 ?c3) (c3 ?c1) (c4 ?c4)) ; 2314
+                                 (and (c1 ?c2) (c2 ?c3) (c3 ?c4) (c4 ?c1)) ; 2341
+                                 (and (c1 ?c2) (c2 ?c4) (c3 ?c1) (c4 ?c3)) ; 2413
+                                 (and (c1 ?c2) (c2 ?c4) (c3 ?c3) (c4 ?c1)) ; 2431
+                                 (and (c1 ?c3) (c2 ?c1) (c3 ?c2) (c4 ?c4)) ; 3124
+                                 (and (c1 ?c3) (c2 ?c1) (c3 ?c4) (c4 ?c2)) ; 3142
+                                 (and (c1 ?c3) (c2 ?c2) (c3 ?c1) (c4 ?c4)) ; 3214
+                                 (and (c1 ?c3) (c2 ?c2) (c3 ?c4) (c4 ?c1)) ; 2341
+                                 (and (c1 ?c3) (c2 ?c4) (c3 ?c1) (c4 ?c2)) ; 3412
+                                 (and (c1 ?c3) (c2 ?c4) (c3 ?c2) (c4 ?c1)) ; 3421
+                                 (and (c1 ?c4) (c2 ?c1) (c3 ?c2) (c4 ?c3)) ; 4123
+                                 (and (c1 ?c4) (c2 ?c1) (c3 ?c3) (c4 ?c2)) ; 4132
+                                 (and (c1 ?c4) (c2 ?c2) (c3 ?c1) (c4 ?c3)) ; 4213
+                                 (and (c1 ?c4) (c2 ?c2) (c3 ?c3) (c4 ?c1)) ; 4231
+                                 (and (c1 ?c4) (c2 ?c3) (c3 ?c1) (c4 ?c2)) ; 4312
+                                 (and (c1 ?c4) (c2 ?c3) (c3 ?c2) (c4 ?c1))) ; 4321
+          ; ------------ permutated4 ------------
+                          )
+                          (or ; xxx-
+                              (and (c1 ?c1) (c2 ?c2) (c3 ?c3)) ; 123
+                              (and (c1 ?c1) (c2 ?c3) (c3 ?c2)) ; 132
+                              (and (c1 ?c2) (c2 ?c1) (c3 ?c3)) ; 213
+                              (and (c1 ?c2) (c2 ?c3) (c3 ?c1)) ; 231
+                              (and (c1 ?c3) (c2 ?c1) (c3 ?c2)) ; 312
+                              (and (c1 ?c3) (c2 ?c2) (c3 ?c1)) ; 321
+                              (and (c1 ?c1) (c2 ?c2) (c3 ?c4)) ; 124
+                              (and (c1 ?c1) (c2 ?c4) (c3 ?c2)) ; 142
+                              (and (c1 ?c2) (c2 ?c1) (c3 ?c4)) ; 214
+                              (and (c1 ?c2) (c2 ?c4) (c3 ?c1)) ; 241
+                              (and (c1 ?c4) (c2 ?c1) (c3 ?c2)) ; 412
+                              (and (c1 ?c4) (c2 ?c2) (c3 ?c1)) ; 421
+                              (and (c1 ?c1) (c2 ?c3) (c3 ?c4)) ; 134
+                              (and (c1 ?c1) (c2 ?c4) (c3 ?c3)) ; 143
+                              (and (c1 ?c3) (c2 ?c1) (c3 ?c4)) ; 314
+                              (and (c1 ?c3) (c2 ?c4) (c3 ?c1)) ; 341
+                              (and (c1 ?c4) (c2 ?c1) (c3 ?c3)) ; 413
+                              (and (c1 ?c4) (c2 ?c3) (c3 ?c1)) ; 431
+                              (and (c1 ?c2) (c2 ?c3) (c3 ?c4)) ; 234
+                              (and (c1 ?c2) (c2 ?c4) (c3 ?c3)) ; 243
+                              (and (c1 ?c3) (c2 ?c2) (c3 ?c4)) ; 324
+                              (and (c1 ?c3) (c2 ?c4) (c3 ?c2)) ; 342
+                              (and (c1 ?c4) (c2 ?c2) (c3 ?c3)) ; 423
+                              (and (c1 ?c4) (c2 ?c3) (c3 ?c2)) ; 432
+                              ; xx-x
+                              (and (c1 ?c1) (c2 ?c2) (c4 ?c3)) ; 123
+                              (and (c1 ?c1) (c2 ?c3) (c4 ?c2)) ; 132
+                              (and (c1 ?c2) (c2 ?c1) (c4 ?c3)) ; 213
+                              (and (c1 ?c2) (c2 ?c3) (c4 ?c1)) ; 231
+                              (and (c1 ?c3) (c2 ?c1) (c4 ?c2)) ; 312
+                              (and (c1 ?c3) (c2 ?c2) (c4 ?c1)) ; 321
+                              (and (c1 ?c1) (c2 ?c2) (c4 ?c4)) ; 124
+                              (and (c1 ?c1) (c2 ?c4) (c4 ?c2)) ; 142
+                              (and (c1 ?c2) (c2 ?c1) (c4 ?c4)) ; 214
+                              (and (c1 ?c2) (c2 ?c4) (c4 ?c1)) ; 241
+                              (and (c1 ?c4) (c2 ?c1) (c4 ?c2)) ; 412
+                              (and (c1 ?c4) (c2 ?c2) (c4 ?c1)) ; 421
+                              (and (c1 ?c1) (c2 ?c3) (c4 ?c4)) ; 134
+                              (and (c1 ?c1) (c2 ?c4) (c4 ?c3)) ; 143
+                              (and (c1 ?c3) (c2 ?c1) (c4 ?c4)) ; 314
+                              (and (c1 ?c3) (c2 ?c4) (c4 ?c1)) ; 341
+                              (and (c1 ?c4) (c2 ?c1) (c4 ?c3)) ; 413
+                              (and (c1 ?c4) (c2 ?c3) (c4 ?c1)) ; 431
+                              (and (c1 ?c2) (c2 ?c3) (c4 ?c4)) ; 234
+                              (and (c1 ?c2) (c2 ?c4) (c4 ?c3)) ; 243
+                              (and (c1 ?c3) (c2 ?c2) (c4 ?c4)) ; 324
+                              (and (c1 ?c3) (c2 ?c4) (c4 ?c2)) ; 342
+                              (and (c1 ?c4) (c2 ?c2) (c4 ?c3)) ; 423
+                              (and (c1 ?c4) (c2 ?c3) (c4 ?c2)) ; 432
+                              ; x-xx
+                              (and (c1 ?c1) (c3 ?c2) (c4 ?c3)) ; 123
+                              (and (c1 ?c1) (c3 ?c3) (c4 ?c2)) ; 132
+                              (and (c1 ?c2) (c3 ?c1) (c4 ?c3)) ; 213
+                              (and (c1 ?c2) (c3 ?c3) (c4 ?c1)) ; 231
+                              (and (c1 ?c3) (c3 ?c1) (c4 ?c2)) ; 312
+                              (and (c1 ?c3) (c3 ?c2) (c4 ?c1)) ; 321
+                              (and (c1 ?c1) (c3 ?c2) (c4 ?c4)) ; 124
+                              (and (c1 ?c1) (c3 ?c4) (c4 ?c2)) ; 142
+                              (and (c1 ?c2) (c3 ?c1) (c4 ?c4)) ; 214
+                              (and (c1 ?c2) (c3 ?c4) (c4 ?c1)) ; 241
+                              (and (c1 ?c4) (c3 ?c1) (c4 ?c2)) ; 412
+                              (and (c1 ?c4) (c3 ?c2) (c4 ?c1)) ; 421
+                              (and (c1 ?c1) (c3 ?c3) (c4 ?c4)) ; 134
+                              (and (c1 ?c1) (c3 ?c4) (c4 ?c3)) ; 143
+                              (and (c1 ?c3) (c3 ?c1) (c4 ?c4)) ; 314
+                              (and (c1 ?c3) (c3 ?c4) (c4 ?c1)) ; 341
+                              (and (c1 ?c4) (c3 ?c1) (c4 ?c3)) ; 413
+                              (and (c1 ?c4) (c3 ?c3) (c4 ?c1)) ; 431
+                              (and (c1 ?c2) (c3 ?c3) (c4 ?c4)) ; 234
+                              (and (c1 ?c2) (c3 ?c4) (c4 ?c3)) ; 243
+                              (and (c1 ?c3) (c3 ?c2) (c4 ?c4)) ; 324
+                              (and (c1 ?c3) (c3 ?c4) (c4 ?c2)) ; 342
+                              (and (c1 ?c4) (c3 ?c2) (c4 ?c3)) ; 423
+                              (and (c1 ?c4) (c3 ?c3) (c4 ?c2)) ; 432
+                              ; -xxx
+                              (and (c2 ?c1) (c3 ?c2) (c4 ?c3)) ; 123
+                              (and (c2 ?c1) (c3 ?c3) (c4 ?c2)) ; 132
+                              (and (c2 ?c2) (c3 ?c1) (c4 ?c3)) ; 213
+                              (and (c2 ?c2) (c3 ?c3) (c4 ?c1)) ; 231
+                              (and (c2 ?c3) (c3 ?c1) (c4 ?c2)) ; 312
+                              (and (c2 ?c3) (c3 ?c2) (c4 ?c1)) ; 321
+                              (and (c2 ?c1) (c3 ?c2) (c4 ?c4)) ; 124
+                              (and (c2 ?c1) (c3 ?c4) (c4 ?c2)) ; 142
+                              (and (c2 ?c2) (c3 ?c1) (c4 ?c4)) ; 214
+                              (and (c2 ?c2) (c3 ?c4) (c4 ?c1)) ; 241
+                              (and (c2 ?c4) (c3 ?c1) (c4 ?c2)) ; 412
+                              (and (c2 ?c4) (c3 ?c2) (c4 ?c1)) ; 421
+                              (and (c2 ?c1) (c3 ?c3) (c4 ?c4)) ; 134
+                              (and (c2 ?c1) (c3 ?c4) (c4 ?c3)) ; 143
+                              (and (c2 ?c3) (c3 ?c1) (c4 ?c4)) ; 314
+                              (and (c2 ?c3) (c3 ?c4) (c4 ?c1)) ; 341
+                              (and (c2 ?c4) (c3 ?c1) (c4 ?c3)) ; 413
+                              (and (c2 ?c4) (c3 ?c3) (c4 ?c1)) ; 431
+                              (and (c2 ?c2) (c3 ?c3) (c4 ?c4)) ; 234
+                              (and (c2 ?c2) (c3 ?c4) (c4 ?c3)) ; 243
+                              (and (c2 ?c3) (c3 ?c2) (c4 ?c4)) ; 324
+                              (and (c2 ?c3) (c3 ?c4) (c4 ?c2)) ; 342
+                              (and (c2 ?c4) (c3 ?c2) (c4 ?c3)) ; 423
+                              (and (c2 ?c4) (c3 ?c3) (c4 ?c2)))) ; 432
+       :effect (and (check-correct) (last-c1 ?c1) (last-c2 ?c2)
+                                    (last-c3 ?c3) (last-c4 ?c4)))
+    (:event-designated permutated4 ; 4 pieces
+       :precondition (and (not (check-correct)) (or (and (c1 ?c1) (c2 ?c2) (c3 ?c3) (c4 ?c4)) ; 1234
+                                                    (and (c1 ?c1) (c2 ?c2) (c3 ?c4) (c4 ?c3)) ; 1243
+                                                    (and (c1 ?c1) (c2 ?c3) (c3 ?c2) (c4 ?c4)) ; 1324
+                                                    (and (c1 ?c1) (c2 ?c3) (c3 ?c4) (c4 ?c2)) ; 1342
+                                                    (and (c1 ?c1) (c2 ?c4) (c3 ?c2) (c4 ?c3)) ; 1423
+                                                    (and (c1 ?c1) (c2 ?c4) (c3 ?c3) (c4 ?c2)) ; 1432
+                                                    (and (c1 ?c2) (c2 ?c1) (c3 ?c3) (c4 ?c4)) ; 2134
+                                                    (and (c1 ?c2) (c2 ?c1) (c3 ?c4) (c4 ?c3)) ; 2143
+                                                    (and (c1 ?c2) (c2 ?c3) (c3 ?c1) (c4 ?c4)) ; 2314
+                                                    (and (c1 ?c2) (c2 ?c3) (c3 ?c4) (c4 ?c1)) ; 2341
+                                                    (and (c1 ?c2) (c2 ?c4) (c3 ?c1) (c4 ?c3)) ; 2413
+                                                    (and (c1 ?c2) (c2 ?c4) (c3 ?c3) (c4 ?c1)) ; 2431
+                                                    (and (c1 ?c3) (c2 ?c1) (c3 ?c2) (c4 ?c4)) ; 3124
+                                                    (and (c1 ?c3) (c2 ?c1) (c3 ?c4) (c4 ?c2)) ; 3142
+                                                    (and (c1 ?c3) (c2 ?c2) (c3 ?c1) (c4 ?c4)) ; 3214
+                                                    (and (c1 ?c3) (c2 ?c2) (c3 ?c4) (c4 ?c1)) ; 2341
+                                                    (and (c1 ?c3) (c2 ?c4) (c3 ?c1) (c4 ?c2)) ; 3412
+                                                    (and (c1 ?c3) (c2 ?c4) (c3 ?c2) (c4 ?c1)) ; 3421
+                                                    (and (c1 ?c4) (c2 ?c1) (c3 ?c2) (c4 ?c3)) ; 4123
+                                                    (and (c1 ?c4) (c2 ?c1) (c3 ?c3) (c4 ?c2)) ; 4132
+                                                    (and (c1 ?c4) (c2 ?c2) (c3 ?c1) (c4 ?c3)) ; 4213
+                                                    (and (c1 ?c4) (c2 ?c2) (c3 ?c3) (c4 ?c1)) ; 4231
+                                                    (and (c1 ?c4) (c2 ?c3) (c3 ?c1) (c4 ?c2)) ; 4312
+                                                    (and (c1 ?c4) (c2 ?c3) (c3 ?c2) (c4 ?c1)))) ; 4321
+       :effect (and (check-correct) (last-c1 ?c1) (last-c2 ?c2)
+                                    (last-c3 ?c3) (last-c4 ?c4)))
+    :observability full))
+

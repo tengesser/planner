@@ -1,0 +1,46 @@
+(define (domain ctp)
+  (:requirements :strips :typing)
+  (:types waypoint agent)
+  (:predicates (communication-enabled)
+               (road ?w1 ?w2 - waypoint)
+               (blocked ?w1 ?w2 - waypoint)
+               (not-blocked ?w1 ?w2 - waypoint)
+               (at ?a - agent ?w - waypoint)
+               (not-at ?a - agent ?w - waypoint))
+  (:action move
+     :parameters (?a - agent ?w1 ?w2 - waypoint)
+     :byagent ?a
+     :precondition (and (at ?a ?w1)
+                        (road ?w1 ?w2)
+                        (not-blocked ?w1 ?w2))
+     :effect       (and (not (at ?a ?w1))
+                        (not-at ?a ?w1)
+                        (at ?a ?w2)
+                        (not (not-at ?a ?w2))))
+  (:action check
+     :parameters (?a - agent ?w1 ?w2 - waypoint)
+     :byagent ?a
+     (:event-designated check-succ
+        :precondition (and (road ?w1 ?w2)
+                           (at ?a ?w1)
+                           (not-blocked ?w1 ?w2))
+        :effect       (and))
+     (:event-designated check-unsucc
+        :precondition (and (road ?w1 ?w2)
+                           (at ?a ?w1)
+                           (blocked ?w1 ?w2))
+        :effect       (and))
+     :observability none
+     :observability full ?a)
+  (:action announce
+     :parameters (?a - agent ?w1 ?w2 - waypoint)
+     :byagent ?a
+     (:event-designated announce-free
+        :precondition (and (communication-enabled)
+                           (knows ?a (not-blocked ?w1 ?w2)))
+        :effect       (and))
+     (:event-designated announce-blocked
+        :precondition (and (communication-enabled)
+                           (knows ?a (blocked ?w1 ?w2)))
+        :effect       (and))
+     :observability full))

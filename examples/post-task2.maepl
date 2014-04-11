@@ -1,0 +1,48 @@
+(define (problem post1)
+  (:domain post)
+  (:objects A1 A2 A3 - agent
+            S1 S2 S3 - station
+            H1 H2 H3 - house
+            P1 P2    - package)
+  (:init (homebase A1 S1)
+         (homebase A2 S2)
+         (homebase A3 S3)
+         (connected S1 S2)
+         (connected S2 S3)
+         (connected S1 H1)
+         (connected S2 H2)
+         (connected S3 H3)
+         (at P1 S1)
+         (at P2 S1))
+  (:world-designated wtrue
+     (destined P1 H2)
+     (destined P2 H3))
+  (:world-nondesignated wf1
+     (destined P1 H1)
+     (destined P2 H1))
+  (:world-nondesignated wf2
+     (destined P1 H1)
+     (destined P2 H2))
+  (:world-nondesignated wf3
+     (destined P1 H1)
+     (destined P2 H3))
+  (:world-nondesignated wf4
+     (destined P1 H2)
+     (destined P2 H1))
+  (:world-nondesignated wf5
+     (destined P1 H2)
+     (destined P2 H2))
+  (:world-nondesignated wf6
+     (destined P1 H3)
+     (destined P2 H1))
+  (:world-nondesignated wf7
+     (destined P1 H3)
+     (destined P2 H2))
+  (:world-nondesignated wf8
+     (destined P1 H3)
+     (destined P2 H3))
+  (:observability none)
+  (:goal (forall (?p - package)
+           (forall (?h - house)
+             (imply (destined ?p ?h)
+                    (at ?p ?h))))))

@@ -1,0 +1,44 @@
+(define (domain post)
+  (:requirements :strips :typing :existential-preconditions)
+  (:types station house - place package agent)
+  (:predicates (homebase ?a - agent ?s - station)
+               (connected ?from ?to - place)
+               (destined ?p - package ?for - house)
+               (at ?p - package ?at - place))
+  (:action move
+     :parameters (?a - agent ?p - package ?from ?to - station)
+     :byagent ?a
+     :precondition (and (homebase ?a ?from)
+                        (connected ?from ?to)
+                        (at ?p ?from)
+                        (not (exists (?h - house)
+                               (and (connected ?from ?h)
+                                    (destined ?p ?h)))))
+     :effect       (and (not (at ?p ?from))
+                        (at ?p ?to)))
+  (:action deliver
+     :parameters (?a - agent ?p - package ?from - station ?to - house)
+     :byagent ?a
+     :precondition (and (homebase ?a ?from)
+                        (connected ?from ?to)
+                        (at ?p ?from)
+                        (destined ?p ?to))
+     :effect       (and (not (at ?p ?from))
+                        (at ?p ?to)))
+  (:action check-adress
+     :parameters (?a - agent ?s - station ?p - package ?h - house)
+     :byagent ?a
+     (:event-designated check-succ
+        :precondition (and (homebase ?a ?s)
+                           (connected ?s ?h)
+                           (at ?p ?s)
+                           (destined ?p ?h))
+        :effect       (and))
+     (:event-designated check-unsucc
+        :precondition (and (homebase ?a ?s)
+                           (connected ?s ?h)
+                           (at ?p ?s)
+                           (not (destined ?p ?h)))
+        :effect       (and))
+     :observability none
+     :observability full ?a))

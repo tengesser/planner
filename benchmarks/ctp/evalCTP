@@ -1,0 +1,7 @@
+for f in 2*; do for t in $f/*.maepl; do echo $t; time ../../planner conditional individual none ctp-simple-domain-pnf.maepl $t; done &> $f/none.txt; done
+
+for f in 2*; do for t in $f/*.maepl; do echo $t; time ../../planner conditional individual relaxation ctp-simple-domain-pnf.maepl $t; done &> $f/relax.txt; done
+
+for f in 3*; do for t in $f/*.maepl; do echo $t; time ../../planner conditional individual none ctp-simple-domain-pnf.maepl $t; done &> $f/none.txt; done
+
+for f in 3*; do for t in $f/*.maepl; do echo $t; time ../../planner conditional individual relaxation ctp-simple-domain-pnf.maepl $t; done &> $f/relax.txt; done

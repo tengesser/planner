@@ -1,0 +1,24 @@
+(define (problem ctp-1)
+  (:domain ctp)
+  (:objects S W1 W2 W3 G - waypoint
+            A1 A2 - agent)
+  (:init (communication-enabled)
+         (road S W1) (not-blocked S W1) (road W1 G)
+         (road S W2) (not-blocked S W2) (road W2 G)
+         (road S W3) (not-blocked S W3) (road W3 G)
+         (at A1 S) (not-at A1 W1) (not-at A1 W2)
+                   (not-at A1 W3) (not-at A1 G)
+         (at A2 S) (not-at A2 W1) (not-at A2 W2)
+                   (not-at A2 W3) (not-at A2 G))
+  (:world-designated w12 (blocked W1 G)
+                         (blocked W2 G)
+                         (not-blocked W3 G))
+  (:world-nondesignated w13 (blocked W1 G)
+                            (not-blocked W2 G)
+                            (blocked W3 G))
+  (:observability none)
+  (:goal (at A2 G)))
+
+
+; ideas - 1. abstraction: abstract blocked away (= dist heuristics)
+;         2. relaxation: abstract knowledge away, drop uncertainity

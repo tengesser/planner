@@ -1,0 +1,30 @@
+(define (domain canadian)
+  (:types waypoint agent)
+  (:predicates (road ?from ?to - waypoint)
+               (blocked ?from ?to - waypoint)
+               (position ?a - agent ?w - waypoint)
+               (communicated ?a - agent))
+  (:action travel
+     :parameters (?a - agent ?from ?to - waypoint)
+     :byagent ?a
+     (:event-designated free
+        :precondition (and (position ?a ?from)
+                            (road ?from ?to)
+                            (not (blocked ?from ?to)))
+        :effect (and (not (position ?a ?from))
+                      (position ?a ?to)))
+     (:event-designated blocked
+        :precondition (and (position ?a ?from)
+                            (road ?from ?to)
+                            (blocked ?from ?to))
+        :effect (and))
+     :observability none
+     :observability full ?a)
+  (:action communicate-free
+     :parameters (?a - agent ?w1 ?w2 - waypoint)
+     :byagent ?a
+     :precondition (and (road ?w1 ?w2)
+                        (not (communicated ?a))
+                        (knows ?a (not (blocked ?w1 ?w2))))
+     :effect (and ;(forall (?a2 - agent) (communicated ?a2)) 
+                  (communicated ?a))))
