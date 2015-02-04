@@ -22,7 +22,7 @@ DIROBS=maepl/data.o maepl/PlanningTask.o maepl/lex.yy.o \
 
 OBJECTS=$(SOURCES:.cpp=.o)
 
-all: dirs $(SOURCES) $(EXECUTABLE)
+all: dirs $(SOURCES) $(EXECUTABLE) rcg
 
 .PHONY: dirs
 dirs:
@@ -30,6 +30,9 @@ dirs:
 	
 $(EXECUTABLE): dirs $(OBJECTS) 
 	$(CXX) $(OBJECTS) $(DIROBS) $(LDFLAGS) -o $@
+
+rcg: dirs rcg.o $(DIROBS)
+	$(CXX) $(DIROBS) EpistemicModeling.o FormulaManager.o PrettyPrint.o rcg.o $(LDFLAGS) -o $@
 
 %.o: %.cpp *.h */*.h
 	$(CXX) -c $(CXXFLAGS) $< -o $@
@@ -59,6 +62,6 @@ clean:
 
 .PHONY: veryclean
 veryclean: clean
-	rm -f $(EXECUTABLE)
+	rm -f $(EXECUTABLE) rcg
 
 
