@@ -138,7 +138,7 @@ bool EAOStar::propagateSolved(EAONode * toNode,
   // first, update node information if necessary
   if (   !toNode->solvedChildren[fromState]  // substate not solved before
       || pathLength < toNode->solvedLength[fromState]     // shorter solve
-      || (   toNode->parents.empty()                      // by pl. agent
+      || (pathLength == toNode->solvedLength[fromState]   // by pl. agent
           && problem.actions[fromAction]->agent == agent))
   {
     toNode->solvedChildren[fromState] = true;
