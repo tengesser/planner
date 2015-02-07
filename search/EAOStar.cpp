@@ -375,6 +375,9 @@ Plan EAOStar::search(const EPState * state)
       return witness;
     }
 
+    if (witness.ok) // HACK!
+      return witness;
+
     // take node from queue
     EAONode * current = takeFromHeap(heap);
     

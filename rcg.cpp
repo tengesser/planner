@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <string>
 #include <sstream>
+#include <set>
 
 #include "EpistemicModeling.h"
 #include "PrettyPrint.h"
@@ -47,6 +48,13 @@ struct deal {
   }
 };
 
+std::string toString(const int & i)
+{
+  std::ostringstream oss;
+  oss << i;
+  return oss.str();
+}
+
 std::string toString(const comb & c) {
   std::ostringstream oss;
   oss << c.a << c.b << c.c;
@@ -86,7 +94,7 @@ int main(int argc, char* argv[])
   for (int i=0; i<nDeals; ++i) std::cout << toString(deals[i]) << ", "; std::cout << std::endl;
 
   int nAgents = 3;
-  int nPropositions = 2*nCombs+1;
+  int nPropositions = 2*nCombs+1+3*7;
   int nWorlds = nDeals;
   int ** eqc = new int*[nAgents];
   for (int a=0; a<nAgents; ++a)
@@ -104,6 +112,13 @@ int main(int argc, char* argv[])
     val[w][deals[w].c1.i]        = true; // comb of agent 1
     val[w][nCombs+deals[w].c2.i] = true; // comb of agent 2
     val[w][2*nCombs]             = true; // first move
+    val[w][2*nCombs+1+deals[w].c1.a] = true;
+    val[w][2*nCombs+1+deals[w].c1.b] = true;
+    val[w][2*nCombs+1+deals[w].c1.c] = true;
+    val[w][2*nCombs+1+7+deals[w].c2.a] = true;
+    val[w][2*nCombs+1+7+deals[w].c2.b] = true;
+    val[w][2*nCombs+1+7+deals[w].c2.c] = true;
+    val[w][2*nCombs+1+14+deals[w].x] = true;
   }
   std::vector<bool> * designated = new std::vector<bool>(nWorlds);
   for (int w=0; w<nWorlds; ++w)
@@ -114,29 +129,28 @@ int main(int argc, char* argv[])
                            NULL, NULL, NULL, NULL, designated);
 
   FormulaManager * fm = &FormulaManager::getInstance();
-  std::vector<formula> agent1HasComb, agent2HasComb,
-                       k2Agent1HasComb, k1Agent2HasComb,
-                       k3Agent1HasComb, k3Agent2HasComb;
-                       //agent1knowsComb, agent2knowsComb;
-  std::set<formula> agent1, agent2, agent3;
+  std::vector<formula> agent1HasComb,
+                       agent1HasCard, agent2HasCard, agent3HasCard,
+                       agent1knows2sCards, agent2knows1sCards, agent3knowsForeignCards;
+  std::set<formula> agent1knows2sCardsSet, agent2knows1sCardsSet, agent3knowsForeignCardsSet;
   formula firstmove = fm->genProp(2*nCombs);
+  // formulae agent 1 has combination X (for 5-action preconditions)
   for (int c=0; c<nCombs; ++c) {
     agent1HasComb.push_back(fm->genProp(c));
-    agent2HasComb.push_back(fm->genProp(nCombs+c));
-    k2Agent1HasComb.push_back(fm->genK(1,agent1HasComb[c]));
-    k1Agent2HasComb.push_back(fm->genK(0,agent2HasComb[c]));
-    k3Agent1HasComb.push_back(fm->genK(2,agent1HasComb[c]));
-    k3Agent2HasComb.push_back(fm->genK(2,agent2HasComb[c]));
-    //agent1knowsComb.push_back(fm->genImp(agent2HasComb[c], k1Agent2HasComb[c]));
-    //agent2knowsComb.push_back(fm->genImp(agent1HasComb[c], k2Agent1HasComb[c]));
-    agent1.insert(k1Agent2HasComb[c]);
-    agent2.insert(k2Agent1HasComb[c]);
-    agent3.insert(k3Agent1HasComb[c]);
-    agent3.insert(k3Agent2HasComb[c]);
   }
-  formula agent1knowing = fm->genDis(agent1);
-  formula agent2knowing = fm->genDis(agent2);
-  formula agent3ignorant = fm->genNeg(fm->genDis(agent3));
+  // formulae agent 1/2/3 has card X & agent 1/2 knows all of the other cards & agent 3 knows some of ot.
+  for (int x=0; x<7; ++x) {
+    agent1HasCard.push_back(fm->genProp(2*nCombs+1+ 0+x));
+    agent2HasCard.push_back(fm->genProp(2*nCombs+1+ 7+x));
+    agent3HasCard.push_back(fm->genProp(2*nCombs+1+14+x));
+    agent1knows2sCardsSet.insert(fm->genImp(agent2HasCard[x], fm->genK(0,agent2HasCard[x])));
+    agent2knows1sCardsSet.insert(fm->genImp(agent1HasCard[x], fm->genK(1,agent1HasCard[x])));
+    agent3knowsForeignCardsSet.insert(fm->genK(2, agent1HasCard[x]));
+    agent3knowsForeignCardsSet.insert(fm->genK(2, agent2HasCard[x]));
+  }
+  formula agent1knowing = fm->genCon(agent1knows2sCardsSet);
+  formula agent2knowing = fm->genCon(agent2knows1sCardsSet);
+  formula agent3ignorant = fm->genNeg(fm->genDis(agent3knowsForeignCardsSet));
 
   std::set<formula> goalL;
   goalL.insert(agent1knowing);
@@ -144,18 +158,27 @@ int main(int argc, char* argv[])
   goalL.insert(agent3ignorant);
   formula goal = fm->genCon(goalL);
 
+
+
   std::vector<GroundedAction> gactions;
   std::vector<EpistemicAction*> actions;
   // 5-actions (sol: 0:012 9:034 14:056 20:135 29:246)
+  // ass 1 + ass 2: 31628
   std::cout << std::endl << "generating 5-actions!" << std::endl;
-#pragma omp parallel for
-  for (int c1=   0; c1<1; ++c1)
-   for (int c2=   9; c2<10; ++c2) {
-#pragma omp critical
+  for (int c1=   0; c1<1; ++c1) // assertion 1: own combination included
+   for (int c2=c1+1; c2<32; ++c2) {
     std::cout << "announce5-" << c1 << "-" << c2 << "-X-X-X, " << std::flush;
-    for (int c3=   14; c3<15; ++c3)
-     for (int c4=   20; c4<21; ++c4)
-      for (int c5=   c4+1; c5<30; ++c5) {
+    for (int c3=c2+1; c3<33; ++c3)
+     for (int c4=c3+1; c4<34; ++c4)
+      for (int c5=c4+1; c5<35; ++c5) {
+        // assertion 2: all cards included
+        std::set<int> cd;
+        cd.insert(combs[c1].a); cd.insert(combs[c1].b); cd.insert(combs[c1].c); 
+        cd.insert(combs[c2].a); cd.insert(combs[c2].b); cd.insert(combs[c2].c); 
+        cd.insert(combs[c3].a); cd.insert(combs[c3].b); cd.insert(combs[c3].c); 
+        cd.insert(combs[c4].a); cd.insert(combs[c4].b); cd.insert(combs[c4].c); 
+        cd.insert(combs[c5].a); cd.insert(combs[c5].b); cd.insert(combs[c5].c);
+        if (cd.size() != 7) continue;
         int nEvents = 1;
         int agent = 0;
         int ** eqc = new int*[3];
@@ -172,7 +195,6 @@ int main(int argc, char* argv[])
         preclistc.insert(agent1HasComb[c5]);
         preclist.insert(firstmove);
         preclist.insert(fm->genDis(preclistc));
-#pragma omp critical
         prec[0] = fm->genCon(preclist);
         boost::dynamic_bitset<> * add_effects, * del_effects;
         std::vector<bool> * edesig = new std::vector<bool>;
@@ -182,23 +204,20 @@ int main(int argc, char* argv[])
         // std::cout << add_effects[0] << std::endl;
         edesig->push_back(true);
         GroundedAction gaction;
-        gaction.name = "announce5-"+toString(combs[c1])+"-"+toString(combs[c2])+"-"+toString(combs[c3])
-                                   +"-"+toString(combs[c4])+"-"+toString(combs[c5]);
+        gaction.name = "a1: i have "+toString(combs[c1])+" or "+toString(combs[c2])+" or "
+                                    +toString(combs[c3])+" or "+toString(combs[c4])+" or "
+                                    +toString(combs[c5])+"!";
         gaction.agent = "agent1";
-#pragma omp critical
         gactions.push_back(gaction);
-#pragma omp critical
         actions.push_back(
           new EpistemicAction(nAgents, nEvents, agent, const_cast<const int**>(eqc),
                               prec, add_effects, del_effects, edesig));
     }
   }
-  // 3-actions (sol: 345 125 024)
-  std::cout << "generating 3-actions!" << std::endl;
-  for (int c1=   0; c1<nCombs-2; ++c1) {
-   std::cout << "announce3-" << c1 << "-X-X, " << std::flush;
-   for (int c2=c1+1; c2<nCombs-1; ++c2)
-    for (int c3=c2+1; c3<nCombs-0; ++c3) {
+  std::cout << actions.size() << " 5-actions!" << std::endl;
+  // 1-actions (sol: 345 125 024)
+  std::cout << "generating 1-actions!" << std::endl;
+  for (int x = 0; x<7; ++x) {
         int nEvents = 1;
         int agent = 1;
         int ** eqc = new int*[3];
@@ -207,12 +226,10 @@ int main(int argc, char* argv[])
           eqc[a][0] = 0;
         }
         int * prec = new int[1];
-        std::set<formula> preclistc, preclist;
-        preclistc.insert(agent2HasComb[c1]);
-        preclistc.insert(agent2HasComb[c2]);
-        preclistc.insert(agent2HasComb[c3]);
+        std::set<formula> preclist;
         preclist.insert(fm->genNeg(firstmove));
-        preclist.insert(fm->genDis(preclistc));
+        //preclist.insert(agent3ignorant);
+        preclist.insert(agent3HasCard[x]);
         prec[0] = fm->genCon(preclist);
         boost::dynamic_bitset<> * add_effects, * del_effects;
         std::vector<bool> * edesig = new std::vector<bool>;
@@ -221,17 +238,15 @@ int main(int argc, char* argv[])
         // std::cout << add_effects[0] << std::endl;
         edesig->push_back(true);
         GroundedAction gaction;
-        gaction.name = "announce3-"+toString(combs[c1])+"-"+toString(combs[c2])+"-"+toString(combs[c3]);
+        gaction.name = "a2: 3 has "+ toString(x) +"!";
         gaction.agent = "agent2";
         gactions.push_back(gaction);
         actions.push_back(
           new EpistemicAction(nAgents, nEvents, agent, const_cast<const int**>(eqc),
                               prec, add_effects, del_effects, edesig));
-    }
   }
   std::cout << " -> finished. Overall Number of actions: " << actions.size() << std::endl;
   if (actions.size() != gactions.size()) std::cerr << "Somethings Wrong!" << std::endl;
-
 
   PlanningProblem problem ("rcg-problem", &initState, actions, goal);
   GroundedProblem gp;
@@ -242,10 +257,16 @@ int main(int argc, char* argv[])
   for (int d=0; d<nDeals; ++d)
     gp.worlds.push_back("w"+toString(deals[d]));
   for (int c=0; c<nCombs; ++c)
-    gp.variables.push_back("has-1-"+toString(combs[c]));
+    gp.variables.push_back("1-has-comb-"+toString(combs[c]));
   for (int c=0; c<nCombs; ++c)
-    gp.variables.push_back("has-2-"+toString(combs[c]));
+    gp.variables.push_back("2-has-comb-"+toString(combs[c]));
   gp.variables.push_back("is-first-move");
+  for (int x=0; x<7; ++x)
+    gp.variables.push_back("1-has-card-"+toString(x));
+  for (int x=0; x<7; ++x)
+    gp.variables.push_back("2-has-card-"+toString(x));
+  for (int x=0; x<7; ++x)
+    gp.variables.push_back("3-has-card-"+toString(x));
   gp.actions = gactions;
 
   std::cout << PrettyPrint::toString(goal) << std::endl;
