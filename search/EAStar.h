@@ -56,7 +56,7 @@ public:
          const Heuristic * h,
          const int & agent = -1,
          const bool & isH = false) :
-    SearchAlgorithm(problem, gp, ps, h, agent, isH) { }
+    SearchAlgorithm(problem, gp, ps, h, agent, isH), exp(0), crt(0), omit(0) { }
   virtual Plan search(const EPState * s = NULL);
   virtual void printSearchInfo();
   // returns a full plan the first time it is used
@@ -67,6 +67,7 @@ private:
                    const EANode * fromNode = NULL,
                    const int & goalDist = 0);
   std::map<EPState, EANode*> createdStates;
+  int exp, crt, omit;
 };
 
 

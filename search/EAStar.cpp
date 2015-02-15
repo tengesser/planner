@@ -31,7 +31,9 @@ Plan EAStar::extractPlan(const EANode * toNode,
 
 void EAStar::printSearchInfo()
 {
-  std::cout << " no EA* information implemented" << std::endl;
+ std::cout << exp << '\t' << crt << '\t' << omit
+           << "\t-\t-\t!\t!\t" << witness.depth << std::endl;
+  // std::cout << " no EA* information implemented" << std::endl;
 }
 
 Plan EAStar::search(const EPState * s)
@@ -84,10 +86,11 @@ Plan EAStar::search(const EPState * s)
     EANode * current = queue.top();
     queue.pop();
 
-    if (witness.ok && (current->gvalue + current->hvalue >= witness.depth))
+    //if (witness.ok && (current->gvalue + current->hvalue >= witness.depth))
           // && (agent == -1 || s == NULL || 
           //     problem.actions[witness.mapping[initNode.state]]->agent 
           //       == agent)
+    if (witness.ok) // HACK!
       return witness;
 
     // check if goal state
@@ -113,8 +116,10 @@ Plan EAStar::search(const EPState * s)
     // otherwise, expand node
     else
     {
+      exp += 1;
       for (unsigned int a = 0; a < problem.actions.size(); ++a)
       {
+        crt += 1;
         bool applicable, applicableAgent;
         EPState childState = h->convertState(
           (ps == PSIndividual) ?
@@ -134,7 +139,9 @@ Plan EAStar::search(const EPState * s)
 
           if (createdStates.find(childState) == createdStates.end())
             createdStates[childState] = childNode;
-        } 
+        }
+        else
+          omit += 1;
       }
     }
   }

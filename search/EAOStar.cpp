@@ -261,7 +261,7 @@ Plan EAOStar::extractPlan(EAONode * fromNode, std::string indent)
 {
   Plan result;
   std::ostringstream os;
-
+/*
   int nSplits = fromNode->splitStates.size();
   if (nSplits == 0)
     os << indent << "---\n";      
@@ -289,6 +289,7 @@ Plan EAOStar::extractPlan(EAONode * fromNode, std::string indent)
     }
   }
   // set depth / ok flag / string representation
+*/
   result.depth = fromNode->maxGoalDist;
   result.ok = true;
   result.stringRep = os.str();
