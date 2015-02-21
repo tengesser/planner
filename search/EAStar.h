@@ -56,7 +56,7 @@ public:
          const Heuristic * h,
          const int & agent = -1,
          const bool & isH = false) :
-    SearchAlgorithm(problem, gp, ps, h, agent, isH), exp(0), crt(0), omit(0) { }
+    SearchAlgorithm(problem, gp, ps, h, agent, isH), exp(0), crt(1), omit(0) { }
   virtual Plan search(const EPState * s = NULL);
   virtual void printSearchInfo();
   // returns a full plan the first time it is used

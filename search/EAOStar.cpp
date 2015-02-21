@@ -225,6 +225,7 @@ EAOStar::queueNewOrExistingNode(const EPState & state, EAONode * parent,
   // else register parent with found node and maybe heap
   else
   {
+    ommited += 1;
     bool fromOldSearch = createdLocal.find(state) == createdLocal.end();
     // register node with parent
     node = found->second;

@@ -172,6 +172,7 @@ int main(int argc, char* argv[])
      for (int c4=c3+1; c4<34; ++c4)
       for (int c5=c4+1; c5<35; ++c5) {
         // assertion 2: all cards included
+        /*
         std::set<int> cd;
         cd.insert(combs[c1].a); cd.insert(combs[c1].b); cd.insert(combs[c1].c); 
         cd.insert(combs[c2].a); cd.insert(combs[c2].b); cd.insert(combs[c2].c); 
@@ -179,6 +180,7 @@ int main(int argc, char* argv[])
         cd.insert(combs[c4].a); cd.insert(combs[c4].b); cd.insert(combs[c4].c); 
         cd.insert(combs[c5].a); cd.insert(combs[c5].b); cd.insert(combs[c5].c);
         if (cd.size() != 7) continue;
+        */
         int nEvents = 1;
         int agent = 0;
         int ** eqc = new int*[3];

@@ -116,10 +116,9 @@ Plan EAStar::search(const EPState * s)
     // otherwise, expand node
     else
     {
-      exp += 1;
+      exp++;
       for (unsigned int a = 0; a < problem.actions.size(); ++a)
       {
-        crt += 1;
         bool applicable, applicableAgent;
         EPState childState = h->convertState(
           (ps == PSIndividual) ?
@@ -127,21 +126,23 @@ Plan EAStar::search(const EPState * s)
           : current->state.product(*problem.actions[a], applicable,
                                     applicableAgent));
 
-        if (   ps == PSCollective ? applicableAgent : applicable
-            && created2.find(childState) == created2.end())
-        {
-          int h = this->h->h(childState);
-          EANode * childNode = new EANode(childState, h,
-                                          current, a);
-          queue.push(childNode);
-          current->children.push_back(childNode);
-          created2.insert(childState);
+        if (ps == PSCollective ? applicableAgent : applicable) {
+          if (created2.find(childState) == created2.end())
+          {
+            crt++;
+            int h = this->h->h(childState);
+            EANode * childNode = new EANode(childState, h,
+                                            current, a);
+            queue.push(childNode);
+            current->children.push_back(childNode);
+            created2.insert(childState);
 
-          if (createdStates.find(childState) == createdStates.end())
-            createdStates[childState] = childNode;
+            if (createdStates.find(childState) == createdStates.end())
+              createdStates[childState] = childNode;
+          }
+          else
+            omit++;
         }
-        else
-          omit += 1;
       }
     }
   }
