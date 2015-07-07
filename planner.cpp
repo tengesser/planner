@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
               << " [FILES]" << std::endl;
     std::cout << " with SEARCH_MODE in {linear,conditional}" << std::endl;
     std::cout << " with PLANNING_SCENARIO in "
-              << "{normal,collective,individal}" << std::endl
+              << "{normal,collective,individual}" << std::endl
               << " with HEURISTICS in "
               << "{none,abstraction,relaxation,exact}"
               << std::endl;

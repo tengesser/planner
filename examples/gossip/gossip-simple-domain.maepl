@@ -1,0 +1,14 @@
+(define (domain gossip-simple)
+  (:types agent secret)
+  (:predicates (secret-true ?s - secret))
+  (:action phone
+     :parameters (?a1 ?a2 - agent ?s - secret)
+     :byagent ?a1
+    (:event-designated secret-true
+       :precondition (knows ?a1 (secret-true ?s))
+       :effect (and))
+    (:event-designated secret-false
+       :precondition (knows ?a1 (not (secret-true ?s)))
+       :effect (and))
+    :observability full ?a1 ?a2
+    :observability none))

@@ -1,0 +1,28 @@
+(define (problem thieves-task-1)
+  (:domain robots)
+  (:objects r1 r2 - agent
+            f1 f2 f3 f4 f5 - field)
+  (:init ; scenery description
+         (fields-adj f1 f2) (fields-adj f2 f1)
+         (fields-adj f2 f3) (fields-adj f3 f2)
+         (fields-adj f3 f4) (fields-adj f4 f3)
+         (fields-adj f2 f5) (fields-adj f5 f2)
+         ; initial state description
+         (agent-at r1 f1)
+         (agent-at r2 f4))
+  (:world-designated w31
+     (goalpos r1 f2)
+     (goalpos r2 f1))
+  (:world-nondesignated w41
+     (goalpos r1 f4)
+     (goalpos r2 f1))
+  (:world-nondesignated w35
+     (goalpos r1 f2)
+     (goalpos r2 f5))
+  (:world-nondesignated w45
+     (goalpos r1 f4)
+     (goalpos r2 f5))
+  (:observability (partition (w31 w35) (w41 w45)) r1)
+  (:observability (partition (w31 w41) (w35 w45)) r2)
+  (:goal (forall (?a - agent) (exists (?g - field)
+            (and (goalpos ?a ?g) (agent-at ?a ?g)))))); ;

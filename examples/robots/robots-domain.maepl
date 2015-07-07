@@ -1,0 +1,22 @@
+(define (domain robots)
+  (:types agent field)
+  (:predicates
+     ; these are for describing the scenery and remain constant
+     (fields-adj ?f1 ?f2 - field)
+     (goalpos ?a - agent ?f - field)
+     ; these can change during plan execution
+     (agent-at ?a - agent ?f - field))
+  (:action move
+     :parameters (?agent - agent ?from ?to - field)
+     :byagent ?agent
+     :precondition (and (fields-adj ?from ?to)
+                        (agent-at ?agent ?from)
+                        (not (exists (?a2 - agent) (agent-at ?a2 ?to))))
+     :effect (and (not (agent-at ?agent ?from))
+                  (agent-at ?agent ?to)))
+  (:action announce-im-at-goal
+     :parameters (?a - agent)
+     :byagent ?a
+     :precondition (exists (?g - field) (and (agent-at ?a ?g)
+                                             (goalpos ?a ?g)))
+     :effect (and)))

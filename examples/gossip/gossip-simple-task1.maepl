@@ -1,0 +1,64 @@
+(define (problem gossip-task-1)
+  (:domain gossip-simple)
+  (:objects a1 a2 a3 a4 - agent
+            s1 s2 s3 s4 - secret)
+  (:init) ; no globally defined secrets
+  (:world-nondesignated w00)
+  (:world-nondesignated w01
+    (secret-true s1))
+  (:world-nondesignated w02
+    (secret-true s2))
+  (:world-nondesignated w03
+    (secret-true s2)
+    (secret-true s1))
+  (:world-nondesignated w04
+    (secret-true s3))
+  (:world-nondesignated w05
+    (secret-true s3)
+    (secret-true s1))
+  (:world-nondesignated w06
+    (secret-true s3)
+    (secret-true s2))
+  (:world-nondesignated w07
+    (secret-true s3)
+    (secret-true s2)
+    (secret-true s1))
+  (:world-nondesignated w08
+    (secret-true s4))
+  (:world-nondesignated w09
+    (secret-true s4)
+    (secret-true s1))
+  (:world-nondesignated w10
+    (secret-true s4)
+    (secret-true s2))
+  (:world-designated w11
+    (secret-true s4)
+    (secret-true s2)
+    (secret-true s1))
+  (:world-nondesignated w12
+    (secret-true s4)
+    (secret-true s3))
+  (:world-nondesignated w13
+    (secret-true s4)
+    (secret-true s3)
+    (secret-true s1))
+  (:world-nondesignated w14
+    (secret-true s4)
+    (secret-true s3)
+    (secret-true s2))
+  (:world-nondesignated w15
+    (secret-true s4)
+    (secret-true s3)
+    (secret-true s2)
+    (secret-true s1))
+  (:observability (partition (w00 w02 w04 w06 w08 w10 w12 w14)
+                             (w01 w03 w05 w07 w09 w11 w13 w15)) a1)
+  (:observability (partition (w02 w03 w06 w07 w10 w11 w14 w15)
+                             (w00 w01 w04 w05 w08 w09 w12 w13)) a2)
+  (:observability (partition (w04 w05 w06 w07 w12 w13 w14 w15)
+                             (w00 w01 w02 w03 w08 w09 w10 w11)) a3)
+  (:observability (partition (w08 w09 w10 w11 w12 w13 w14 w15)
+                             (w00 w01 w02 w03 w04 w05 w06 w07)) a4)
+  (:goal (forall (?a - agent ?s - secret) 
+     (or (knows ?a (secret-true ?s)) (knows ?a (not (secret-true ?s)))))))
+
