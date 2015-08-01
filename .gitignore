@@ -1,0 +1,7 @@
+*.o
+*/*.o
+maepl/lex.yy.c
+maepl/lex.yy.o
+maepl/maepl.tab.c
+maepl/maepl.tab.h
+planner
