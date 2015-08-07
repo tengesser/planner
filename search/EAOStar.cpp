@@ -315,7 +315,7 @@ Plan EAOStar::search(const EPState * state)
 
   // calculate global & associated local state
   EPState initState = 
-    state == NULL ? EPState(newEpistemicStateCopyC(problem.initState))
+    state == NULL ? EPState(newEpistemicStateCopy(problem.initState))
                   : *state;
   EPState agentState = initState.associatedLocal(agent == -1 ? 0 : agent);
   // and a singleton node containing the initial state
@@ -382,8 +382,13 @@ Plan EAOStar::search(const EPState * state)
     if (current->hvalue == -1)
       return witness;
     // return if no more better solutions
-    if (witness.ok && (current->gvalue + current->hvalue
-                                       >= witness.depth))
+    if (witness.ok && (agent == -1 ||
+                        (witness.mapping.find(agentState) != witness.mapping.end() &&
+                         problem.actions[witness.mapping.find(agentState)->second]->agent == agent))  
+                   && current->gvalue + current->hvalue >= witness.depth)
+      return witness;
+    // return if no more better solutions
+    if (witness.ok && current->gvalue + current->hvalue > witness.depth)
       return witness;
     
     // case 1: previously expanded, yet unsolved (from old search)
