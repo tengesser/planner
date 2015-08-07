@@ -54,7 +54,7 @@ protected:
   /// the problem description
   GroundedProblem gp;
   /// the cooperative planning scenario
-  const PlanningScenario & ps;
+  const PlanningScenario ps;
   /// the heuristics
   const Heuristic * h;
   /// the planning agent
