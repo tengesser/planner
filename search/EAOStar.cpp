@@ -315,7 +315,7 @@ Plan EAOStar::search(const EPState * state)
 
   // calculate global & associated local state
   EPState initState = 
-    state == NULL ? EPState(newEpistemicStateCopy(problem.initState))
+    state == NULL ? EPState(newEpistemicStateCopyC(problem.initState))
                   : *state;
   EPState agentState = initState.associatedLocal(agent == -1 ? 0 : agent);
   // and a singleton node containing the initial state
