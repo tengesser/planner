@@ -73,12 +73,12 @@ EPState & EPState::operator=(const EPState & source)
 EPState::~EPState()
 {
   *count -= 1;
-  if (*count == 0)
+  /*if (*count == 0)
   {
     delete count;
     if (state != NULL)
       delete state;
-  }
+  }*/
 }
 
 bool EPState::operator<(const EPState& other) const
