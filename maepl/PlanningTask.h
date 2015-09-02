@@ -25,7 +25,7 @@ class PlanningTask
 public:
   PlanningTask();
   /// parse a flie;
-  bool parse(char* filename);
+  bool parse(const char * filename);
   /// perform grounding
   std::vector<GroundedProblem> ground();
   /// for debugging: print out parsed information             

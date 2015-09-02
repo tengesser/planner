@@ -7,6 +7,6 @@
 #include "PlanningTask.h"
 
 class PlanningTask;
-bool bparse(char * filename, PlanningTask * task);
+bool bparse(const char * filename, PlanningTask * task);
 
 #endif // MAEPL_H_

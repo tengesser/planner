@@ -13,7 +13,7 @@ PlanningTask::PlanningTask()
   ivNameType = CHILD;
 }
 
-bool PlanningTask::parse(char* filename)
+bool PlanningTask::parse(const char * filename)
 {
   return bparse(filename, this);
 }
