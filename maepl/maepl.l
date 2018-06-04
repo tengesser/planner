@@ -30,6 +30,7 @@ name      {character}({character}|{digit}|{dash})*
 
 (?i::action)              { return ACTION; }
 (?i::byagent)             { return BYAGENT; }
+(?i::owner)               { return BYAGENT; }
 (?i::constants)           { return CONSTS; }
 (?i::domain)              { return MYDOMAIN; }
 (?i::extends)             { return EXTENDS; }

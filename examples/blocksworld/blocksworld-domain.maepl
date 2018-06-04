@@ -1,0 +1,88 @@
+(define (domain blocksworld)
+  (:types agent block letter)
+  (:constants A B C D BL - letter)
+  (:predicates
+     (cansense ?a - agent ?b - block)
+     (hasletter ?b - block ?l - letter)
+     (handempty ?a - agent)
+     (ontable ?b - block)
+     (on ?b1 ?b2 - block)
+     (holding ?a - agent ?b - block)
+     (clear ?b - block)
+     (order ?l1 ?l2 - letter))
+  (:action sense
+     :parameters (?a - agent ?b - block)
+     :owner ?a
+     (:event-designated unobservable
+        :precondition (and (handempty ?a)
+                           (clear ?b)
+                           (not (cansense ?a ?b)))
+        :effect (and))
+     (:event-designated observeBL
+        :precondition (and (handempty ?a)
+                           (clear ?b)
+                           (cansense ?a ?b)
+                           (hasletter ?b BL))
+        :effect (and))
+     (:event-designated observeA
+        :precondition (and (handempty ?a)
+                           (clear ?b)
+                           (cansense ?a ?b)
+                           (hasletter ?b A))
+        :effect (and))
+     (:event-designated observeB
+        :precondition (and (handempty ?a)
+                           (clear ?b)
+                           (cansense ?a ?b)
+                           (hasletter ?b B))
+        :effect (and))
+     (:event-designated observeC
+        :precondition (and (handempty ?a)
+                           (clear ?b)
+                           (cansense ?a ?b)
+                           (hasletter ?b C))
+        :effect (and))
+     (:event-designated observeD
+        :precondition (and (handempty ?a)
+                           (clear ?b)
+                           (cansense ?a ?b)
+                           (hasletter ?b D))
+        :effect (and))
+     :observability none
+     :observability full ?a)
+  (:action pick-up
+   :parameters (?a - agent ?b - block)
+   :owner ?a
+   :precondition (and (clear ?b) (ontable ?b) (handempty ?a))
+   :effect (and (not (ontable ?b))
+                (not (clear ?b))
+                (not (handempty ?a))
+                (holding ?a ?b)))
+  (:action unstack
+   :parameters (?a - agent ?b1 ?b2 - block)
+   :owner ?a
+   :precondition (and (on ?b1 ?b2) (clear ?b1) (handempty ?a))
+   :effect (and (holding ?a ?b1)
+                (clear ?b2)
+                (not (clear ?b1))
+                (not (handempty ?a))
+                (not (on ?b1 ?b2))))
+  (:action put-down
+   :parameters (?a - agent ?b - block)
+   :owner ?a
+   :precondition (holding ?a ?b)
+   :effect (and (not (holding ?a ?b))
+                (clear ?b)
+                (handempty ?a)
+                (ontable ?b)))
+  (:action stack
+   :parameters (?a - agent ?b1 ?b2 - block ?l1 ?l2 - letter)
+   :owner ?a
+   :precondition (and (holding ?a ?b1) (clear ?b2)
+                      (hasletter ?b1 ?l1) (hasletter ?b2 ?l2)
+                      (order ?l2 ?l1))
+   :effect (and (not (holding ?a ?b1))
+                (not (clear ?b2))
+                (clear ?b1)
+                (handempty ?a)
+                (on ?b1 ?b2))))
